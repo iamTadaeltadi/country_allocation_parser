@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>County Allocation Extractor</title>
+  <style>
+    :root {
+      --primary-color: #007bff;
+      --primary-dark: #0056b3;
+      --secondary-color: #28a745;
+      --bg-color: #f4f7f9;
+      --card-bg: #ffffff;
+      --text-color: #333;
+      --font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      --border-radius: 10px;
+      --box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+    }
+
+    body {
+      font-family: var(--font-family);
+      background: var(--bg-color);
+      margin: 0;
+      padding: 2rem;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      color: var(--text-color);
+    }
+
+    h1 {
+      margin-bottom: 1rem;
+      font-size: 2rem;
+    }
+
+    .container {
+      width: 100%;
+      max-width: 900px;
+      margin: 0 auto;
+    }
+
+    form {
+      background: var(--card-bg);
+      padding: 2rem 3rem;
+      border-radius: var(--border-radius);
+      box-shadow: var(--box-shadow);
+      text-align: center;
+      margin-bottom: 2rem;
+      position: relative;
+    }
+
+    form label {
+      font-weight: bold;
+      margin-top: 1rem;
+      display: block;
+    }
+
+    form input[type="file"],
+    form input[type="text"] {
+      width: 90%;
+      max-width: 400px;
+      padding: 0.6rem;
+      margin: 0.5rem 0 1rem;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+      transition: border 0.3s;
+    }
+
+    form input[type="file"]:focus,
+    form input[type="text"]:focus {
+      border-color: var(--primary-color);
+      outline: none;
+    }
+
+    form button {
+      padding: 0.7rem 1.5rem;
+      background-color: var(--primary-color);
+      color: white;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 1rem;
+      transition: background-color 0.3s, transform 0.2s;
+    }
+
+    form button:hover {
+      background-color: var(--primary-dark);
+      transform: translateY(-2px);
+    }
+
+    /* Loading spinner styling */
+    #loading-spinner {
+      display: none;
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      width: 40px;
+      height: 40px;
+      margin: -20px 0 0 -20px; /* to center the spinner */
+      border: 4px solid #f3f3f3;
+      border-radius: 50%;
+      border-top: 4px solid var(--primary-color);
+      animation: spin 1s linear infinite;
+    }
+
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+
+    .table-wrapper {
+      background: var(--card-bg);
+      box-shadow: var(--box-shadow);
+      border-radius: var(--border-radius);
+      overflow: hidden;
+      margin-bottom: 2rem;
+    }
+
+    .table-wrapper h2 {
+      text-align: center;
+      padding: 1rem;
+      background-color: var(--primary-color);
+      color: #fff;
+      margin: 0;
+      font-size: 1.5rem;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+
+    th, td {
+      padding: 12px 16px;
+      border-bottom: 1px solid #ddd;
+      text-align: left;
+    }
+
+    th {
+      background-color: var(--primary-color);
+      color: white;
+    }
+
+    tr:hover {
+      background-color: #f1f1f1;
+    }
+
+    #download-link {
+      display: inline-block;
+      margin: 1rem auto;
+      padding: 0.5rem 1rem;
+      background: var(--secondary-color);
+      color: white;
+      border-radius: 6px;
+      text-decoration: none;
+      transition: background 0.3s;
+    }
+
+    #download-link:hover {
+      background: #1e7e34;
+    }
+
+    .error-message {
+      background-color: #f8d7da;
+      color: #721c24;
+      padding: 1rem;
+      border-radius: var(--border-radius);
+      margin-bottom: 1rem;
+      border: 1px solid #f5c6cb;
+      text-align: center;
+    }
+
+    @media (max-width: 600px) {
+      form,
+      .table-wrapper {
+        padding: 1.5rem 1rem;
+      }
+      form input[type="file"],
+      form input[type="text"] {
+        width: 100%;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>County Allocations PDF Extractor</h1>
+    
+    <!-- Show error message if exists -->
+    {% if error_message %}
+    <div class="error-message">
+      {{ error_message }}
+    </div>
+    {% endif %}
+
+    <form action="/upload_pdfs" method="post" enctype="multipart/form-data">
+      <label for="file">Choose one or more PDF files:</label>
+      <input type="file" id="file" name="files" accept="application/pdf" multiple>
+      
+      <label for="user_api_key">Optional OpenRouter API Key:</label>
+      <input type="text" id="user_api_key" name="user_api_key" placeholder="Enter your API key if available">
+      
+      <button type="submit">Upload and Process</button>
+      <!-- The spinner for loading -->
+      <div id="loading-spinner"></div>
+    </form>
+
+    {% if table_data %}
+    <div class="table-wrapper">
+      <h2>Extracted Allocations</h2>
+      <table>
+        <thead>
+          <tr>
+            <th>County</th>
+            <th>Allocation (%)</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for row in table_data %}
+          <tr>
+            <td>{{ row['Country'] }}</td>
+            <td>{{ row['Allocation (%)'] }}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    <div style="text-align: center;">
+      <a id="download-link" href="{{ excel_data_url }}" download="output.xlsx">⬇ Download as Spreadsheet</a>
+    </div>
+    {% endif %}
+  </div>
+
+  <script>
+    // On submit, show spinner and disable the button
+    const form = document.querySelector("form");
+    const submitButton = form.querySelector("button");
+    const spinner = document.getElementById("loading-spinner");
+
+    form.addEventListener("submit", function(event) {
+      // Show spinner
+      spinner.style.display = "block";
+
+      // Disable the button and update text
+      submitButton.disabled = true;
+      submitButton.innerText = "Processing...";
+    });
+  </script>
+</body>
+</html>
