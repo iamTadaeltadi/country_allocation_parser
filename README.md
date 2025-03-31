@@ -1,11 +1,8 @@
-Run it using:
+# Running the Application
 
-uvicorn main-gemini-two:app --reload (uses the first LLM)
+## Usage
 
-uvicorn main-gemini-one:app --reload (uses the second LLM)
+Run the application using the following commands:
 
-The respective models are:
-
-model="google/gemini-2.0-flash-thinking-exp-01-21:free"
-
-model="google/gemini-2.0-pro-exp-02-05:free"
+```sh
+uvicorn main-gemini-two:app --reload
