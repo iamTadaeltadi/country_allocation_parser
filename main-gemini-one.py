@@ -1,7 +1,3 @@
-
-
-
-
 import os
 import uuid
 import base64
@@ -25,7 +21,7 @@ load_dotenv()
 app = FastAPI()
 templates = Jinja2Templates(directory="templates")
 
-OPENROUTER_API_KEY = os.getenv("OPENROUTER_API_KEY_TWO")
+OPENROUTER_API_KEY = os.getenv("OPENROUTER_API_KEY_THREE")
 if not OPENROUTER_API_KEY:
     raise ValueError("OPENROUTER_API_KEY not found in environment.")
 
@@ -150,7 +146,7 @@ async def process_pdfs(request: Request, files: List[UploadFile] = File(...)):
       - If final JSON merge fails, we attempt a fallback or show an error result.
     """
     error_message = None
-    df = pd.DataFrame()  # fallback for final return
+    df = pd.DataFrame() 
 
     if len(files) > 10:
         error_message = "Maximum of 10 PDF files allowed at once."
@@ -174,7 +170,6 @@ async def process_pdfs(request: Request, files: List[UploadFile] = File(...)):
         "Return only valid JSON with no extra text."
     )
 
-    # all_raw_responses[pdf_index] = list of JSON strings from that PDF's pages
     all_raw_responses = []
 
     for file in files:
@@ -194,14 +189,12 @@ async def process_pdfs(request: Request, files: List[UploadFile] = File(...)):
                 }
             )
 
-        # For each page in the PDF, call the LLM
         for img in page_images:
             try:
                 encoded_image = encode_image(img)
                 response_text = await call_llm_with_images([encoded_image], prompt_text)
                 pdf_responses.append(response_text)
             except HTTPException as e:
-                # LLM or code error, bubble up to the user via template
                 error_message = f"Error processing page in {file.filename}: {e.detail}"
                 return templates.TemplateResponse(
                     "index.html", 
@@ -212,7 +205,7 @@ async def process_pdfs(request: Request, files: List[UploadFile] = File(...)):
                         "error_message": error_message
                     }
                 )
-           
+            
 
         all_raw_responses.append(pdf_responses)
 
@@ -241,6 +234,7 @@ async def process_pdfs(request: Request, files: List[UploadFile] = File(...)):
         )
         final_response_text = clean_response(final_completion.choices[0].message.content)
     except Exception as e:
+        # Could not even call or parse the consolidation step
         error_message = f"Error consolidating responses: {str(e)}"
         return templates.TemplateResponse(
             "index.html", 
@@ -253,9 +247,13 @@ async def process_pdfs(request: Request, files: List[UploadFile] = File(...)):
         )
     print("Consolidated final_response_text:", final_response_text)
 
+    # ---------------------------
+    # Parse the Final JSON
+    # ---------------------------
     try:
         merged_pdf_list = json.loads(final_response_text)
     except Exception:
+        # Attempt fallback with a different model or just store an error
         try:
             fallback_completion = client.chat.completions.create(
                 extra_body={},
@@ -289,7 +287,7 @@ async def process_pdfs(request: Request, files: List[UploadFile] = File(...)):
 
         start_row = 0
         for i, (pdf_result, file) in enumerate(zip(merged_pdf_list, files)):
-            filename = file.filename.rsplit('.', 1)[0] 
+            filename = file.filename.rsplit('.', 1)[0]  # strip extension
 
             if isinstance(pdf_result, dict):
                 if "error" in pdf_result:
@@ -297,6 +295,7 @@ async def process_pdfs(request: Request, files: List[UploadFile] = File(...)):
                 else:
                     df = pd.DataFrame(list(pdf_result.items()), columns=["County", "Allocation (%)"])
             else:
+                # Possibly not a dict
                 df = pd.DataFrame([{
                     "Error": "Invalid JSON for this PDF",
                     "raw": str(pdf_result)
@@ -323,7 +322,7 @@ async def process_pdfs(request: Request, files: List[UploadFile] = File(...)):
         "index.html",
         {
             "request": request,
-             "table_data": df.to_dict(orient='records'), 
+            "table_data": df.to_dict(orient='records'), 
             "excel_data_url": data_url,
             "error_message": error_message
         }
