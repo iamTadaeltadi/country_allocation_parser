@@ -2,6 +2,16 @@
 
 ## Usage
 
+```sh pip install fastapi uvicorn python-dotenv openai pandas pdf2image pillow jinja2 xlsxwriter```
+If you're on Ubuntu/macOS and encounter issues with pdf2image, you might also need poppler:
+
+```sh
+# macOS
+brew install poppler
+
+# Ubuntu
+sudo apt install poppler-utils
+```
 Run the application using the following commands:
 
 ```sh
