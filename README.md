@@ -41,6 +41,6 @@ The respective models used are:
 > uvicorn main-gemini-two:app --reload
 > ```
 > 
-> If you encounter any errors, it's recommended to generate a new API key.  
+> If you encounter any errors which will be more propbaly related to api key casue of request limits, it's recommended to generate a new API key.  
 > You can do this by signing up at [OpenRouter](https://openrouter.ai) and creating a new key.
 
