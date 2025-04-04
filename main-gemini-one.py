@@ -91,7 +91,7 @@ async def call_llm_with_images(image_base64_list: List[str], prompt_text: str) -
     try:
         completion = client.chat.completions.create(
             extra_body={},
-            model="google/gemini-2.0-pro-exp-02-05:free",
+            model="google/gemini-2.0-flash-lite-001",
             messages=messages,
             max_tokens=2048,
             temperature=0.1,
@@ -226,7 +226,7 @@ async def process_pdfs(request: Request, files: List[UploadFile] = File(...)):
     try:
         final_completion = client.chat.completions.create(
             extra_body={},
-            model="google/gemini-2.0-pro-exp-02-05:free",
+            model="google/gemini-2.0-flash-lite-001",
             messages=consolidation_payload,
             max_tokens=2048,
             temperature=0.1,
@@ -257,7 +257,7 @@ async def process_pdfs(request: Request, files: List[UploadFile] = File(...)):
         try:
             fallback_completion = client.chat.completions.create(
                 extra_body={},
-                model="google/gemini-2.0-pro-exp-02-05:free",
+                model="google/gemini-2.0-flash-lite-001",
                 messages=consolidation_payload,
                 max_tokens=2048,
                 temperature=0.1,
