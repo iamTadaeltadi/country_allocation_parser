@@ -1,0 +1,34 @@
+# Python virtual environment
+/env
+/venv
+
+# Python cache files
+__pycache__/
+*.py[cod]
+
+# VS Code settings (optional)
+.vscode/
+
+# Environment variables
+.env
+
+# Jupyter Notebook checkpoints
+.ipynb_checkpoints/
+
+# MacOS metadata
+.DS_Store
+
+# Logs and outputs
+*.log
+*.sqlite3
+*.db
+
+# Build/output
+dist/
+build/
+*.egg-info/
+
+# Excel or temp files
+*.xlsx
+*.xls
+*.csv
