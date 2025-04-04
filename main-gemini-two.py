@@ -161,10 +161,10 @@ async def process_pdfs(request: Request, files: List[UploadFile] = File(...)):
         )
 
     prompt_text = (
-        "Extract county allocation data from these images. Some images may or may not contain only county names with allocation data — ignore those that do not include allocation data and their allocation percentages. "
-        "Return only valid JSON with keys as county names and values as their allocation percentages, with no additional text. The sum of all percentages should be close or around to 100. "
-        "Please ensure you understand the full context of the images. Focus only on extracting county allocation statistics and ignore any unrelated data. "
-        "Do not include any extra text — only return the JSON with county names and their allocation percentages. "
+        "Extract Country allocation data from these images. Some images may or may not contain only Country names with allocation data — ignore those that do not include allocation data and their allocation percentages. "
+        "Return only valid JSON with keys as Country names and values as their allocation percentages, with no additional text. The sum of all percentages should be close or around to 100. "
+        "Please ensure you understand the full context of the images. Focus only on extracting Country allocation statistics and ignore any unrelated data. "
+        "Do not include any extra text — only return the JSON with Country names and their allocation percentages. "
         "Only include items that are officially recognized subnational geographic units—such as counties, provinces, districts, or municipalities. Terms like 'others' or 'internationals' may also be included, provided they refer to legitimate territorial, administrative, or geopolitical divisions recognized within a country or internationally. "
         "FROM THE IMAGES BE ADVISED. The sum of all percentages should be close or around to 100. "
         "Return only valid JSON with no extra text."
@@ -293,7 +293,7 @@ async def process_pdfs(request: Request, files: List[UploadFile] = File(...)):
                 if "error" in pdf_result:
                     df = pd.DataFrame([pdf_result])
                 else:
-                    df = pd.DataFrame(list(pdf_result.items()), columns=["County", "Allocation (%)"])
+                    df = pd.DataFrame(list(pdf_result.items()), columns=["Country", "Allocation (%)"])
             else:
                 # Possibly not a dict
                 df = pd.DataFrame([{
@@ -317,7 +317,6 @@ async def process_pdfs(request: Request, files: List[UploadFile] = File(...)):
     excel_bytes = output.getvalue()
     excel_base64 = base64.b64encode(excel_bytes).decode("utf-8")
     data_url = f"data:application/vnd.openxmlformats-officedocument.spreadsheetml.sheet;base64,{excel_base64}"
-
     return templates.TemplateResponse(
         "index.html",
         {
